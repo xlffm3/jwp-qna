@@ -6,10 +6,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
 import qna.config.JpaConfig;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -28,18 +32,24 @@ public class QuestionTest {
     private UserRepository userRepository;
 
     @Autowired
-    private AnswerRepository answerRepository;
+    private TestEntityManager entityManager;
+
+    private User javajigi;
+    private User sanjigi;
 
     @BeforeEach
     void addUser() {
+        javajigi = new User("javajigi", "password", "name", "javajigi@slipp.net");
+        sanjigi = new User("sanjigi", "password", "name", "sanjigi@slipp.net");
         userRepository.save(UserTest.JAVAJIGI);
         userRepository.save(UserTest.SANJIGI);
     }
 
     @AfterEach
     void removeUser() {
-        userRepository.delete(UserTest.JAVAJIGI);
-        userRepository.delete(UserTest.SANJIGI);
+        userRepository.delete(javajigi);
+        userRepository.delete(sanjigi);
+        entityManager.flush();
     }
 
     @DisplayName("객체 그래프를 탐색한다.")
@@ -57,23 +67,5 @@ public class QuestionTest {
                 .getAnswers();
 
         assertThat(answers).containsExactly(answer1, answer2);
-    }
-
-    @DisplayName("Question이 삭제되면 등록된 Answer또한 삭제된다.")
-    @Test
-    void testCascade() {
-        Question question = new Question("title1", "content1").writeBy(UserTest.JAVAJIGI);
-        Answer answer1 = new Answer(UserTest.SANJIGI, question, "answer1");
-        Answer answer2 = new Answer(UserTest.SANJIGI, question, "answer2");
-        question.addAnswer(answer1);
-        question.addAnswer(answer2);
-
-        questionRepository.save(question);
-        questionRepository.delete(question);
-
-        boolean isPresent = answerRepository.findById(answer1.getId())
-                .isPresent();
-
-        assertThat(isPresent).isFalse();
     }
 }
