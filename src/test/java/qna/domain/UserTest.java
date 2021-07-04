@@ -35,6 +35,7 @@ public class UserTest {
         String email = savedUser.getEmail();
 
         assertThat(createdAt).isAfter(before);
+        assertThat(JAVAJIGI.getId()).isNotNull();
         assertThat(email).isEqualTo(JAVAJIGI.getEmail());
     }
 
@@ -51,6 +52,5 @@ public class UserTest {
                 .getName();
 
         assertThat(name).isEqualTo("park");
-
     }
 }
