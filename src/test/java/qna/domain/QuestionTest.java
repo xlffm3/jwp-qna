@@ -41,23 +41,21 @@ public class QuestionTest {
     void addUser() {
         javajigi = new User("javajigi", "password", "name", "javajigi@slipp.net");
         sanjigi = new User("sanjigi", "password", "name", "sanjigi@slipp.net");
-        userRepository.save(UserTest.JAVAJIGI);
-        userRepository.save(UserTest.SANJIGI);
+        userRepository.save(javajigi);
+        userRepository.save(sanjigi);
     }
 
     @AfterEach
     void removeUser() {
-        userRepository.delete(javajigi);
-        userRepository.delete(sanjigi);
         entityManager.flush();
     }
 
     @DisplayName("객체 그래프를 탐색한다.")
     @Test
     void findAnswers() {
-        Question question = new Question("title1", "content1").writeBy(UserTest.JAVAJIGI);
-        Answer answer1 = new Answer(UserTest.SANJIGI, question, "answer1");
-        Answer answer2 = new Answer(UserTest.SANJIGI, question, "answer2");
+        Question question = new Question("title1", "content1").writeBy(javajigi);
+        Answer answer1 = new Answer(sanjigi, question, "answer1");
+        Answer answer2 = new Answer(sanjigi, question, "answer2");
         question.addAnswer(answer1);
         question.addAnswer(answer2);
 

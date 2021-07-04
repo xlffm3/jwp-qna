@@ -17,7 +17,7 @@ public class DeleteHistory {
     private ContentType contentType;
     private Long contentId;
     @OneToOne
-    @JoinColumn(name = "deleted_by_id")
+    @JoinColumn(name = "deleted_by_id", foreignKey = @ForeignKey(name = "fk_delete_history_to_user"))
     private User deleter;
     private LocalDateTime createDate = LocalDateTime.now();
 

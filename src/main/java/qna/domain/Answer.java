@@ -14,14 +14,14 @@ public class Answer extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "wirter_id")
+    @JoinColumn(name = "wirter_id", foreignKey = @ForeignKey(name = "fk_answer_writer"))
     private User writer;
     @Lob
     private String contents;
     @Column(nullable = false)
     private Boolean deleted = false;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "question_id")
+    @JoinColumn(name = "question_id", foreignKey = @ForeignKey(name = "fk_answer_to_question"))
     private Question question;
 
     protected Answer() {
