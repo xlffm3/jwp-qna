@@ -23,7 +23,7 @@ public class Question extends BaseEntity {
     private User writer;
     @Column(nullable = false)
     private Boolean deleted = false;
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "question")
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "question", cascade = CascadeType.PERSIST)
     public List<Answer> answers = new ArrayList<>();
 
     protected Question() {
