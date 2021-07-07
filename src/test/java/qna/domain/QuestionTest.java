@@ -60,10 +60,10 @@ public class QuestionTest {
         question.addAnswer(answer2);
 
         questionRepository.save(question);
-        List<Answer> answers = questionRepository.findById(question.getId())
+        Answers answers = questionRepository.findById(question.getId())
                 .orElseThrow(IllegalArgumentException::new)
                 .getAnswers();
 
-        assertThat(answers).containsExactly(answer1, answer2);
+        assertThat(answers.list()).containsExactly(answer1, answer2);
     }
 }

@@ -1,20 +1,28 @@
 package qna.domain;
 
+import org.hibernate.annotations.Where;
 import qna.CannotDeleteException;
 
+import javax.persistence.CascadeType;
+import javax.persistence.Embeddable;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+@Embeddable
 public class Answers {
 
-    private final List<Answer> answers;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "question", cascade = CascadeType.PERSIST)
+    @Where(clause = "deleted = false")
+    public List<Answer> answers = new ArrayList<>();
 
-    public Answers(List<Answer> answers) {
-        this.answers = answers;
+    public Answers() {
     }
 
-    public void isDeletable(User loginUser) throws CannotDeleteException {
+    public void validateDeletableCondition(User loginUser) throws CannotDeleteException {
         long answerCountsByOtherUser = answers.stream()
                 .filter(answer -> !answer.isOwner(loginUser))
                 .count();
@@ -26,5 +34,13 @@ public class Answers {
     public Stream<DeleteHistory> delete() {
         return answers.stream()
                 .map(Answer::delete);
+    }
+
+    public void add(Answer answer) {
+        answers.add(answer);
+    }
+
+    public List<Answer> list() {
+        return answers;
     }
 }

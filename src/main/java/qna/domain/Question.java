@@ -4,9 +4,10 @@ import qna.CannotDeleteException;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Entity
 public class Question extends BaseEntity {
@@ -23,9 +24,8 @@ public class Question extends BaseEntity {
     private User writer;
     @Column(nullable = false)
     private Boolean deleted = false;
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "question", cascade = CascadeType.PERSIST)
-    public List<Answer> answers = new ArrayList<>();
-
+    @Embedded
+    public Answers answers = new Answers();
     protected Question() {
     }
 
@@ -57,32 +57,8 @@ public class Question extends BaseEntity {
         return id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getContents() {
-        return contents;
-    }
-
-    public void setContents(String contents) {
-        this.contents = contents;
-    }
-
     public User getWriter() {
         return writer;
-    }
-
-    public void setWriter(User writer) {
-        this.writer = writer;
     }
 
     public boolean isDeleted() {
@@ -93,12 +69,8 @@ public class Question extends BaseEntity {
         this.deleted = deleted;
     }
 
-    public List<Answer> getAnswers() {
+    public Answers getAnswers() {
         return answers;
-    }
-
-    public void setAnswers(List<Answer> answers) {
-        this.answers = answers;
     }
 
     @Override
@@ -114,14 +86,19 @@ public class Question extends BaseEntity {
         return Objects.hash(id);
     }
 
-    public void isDeletable(User loginUser) throws CannotDeleteException {
+    public void validateDeletableCondition(User loginUser) throws CannotDeleteException {
         if (!this.isOwner(loginUser)) {
             throw new CannotDeleteException("질문을 삭제할 권한이 없습니다.");
         }
+        answers.validateDeletableCondition(loginUser);
     }
 
-    public DeleteHistory delete() {
+    public List<DeleteHistory> delete(User loginUser) throws CannotDeleteException {
+        validateDeletableCondition(loginUser);
         this.setDeleted(true);
-        return new DeleteHistory(ContentType.QUESTION, this.id, this.writer, LocalDateTime.now());
+        Stream<DeleteHistory> answerDeleteHistories = answers.delete();
+        DeleteHistory questionDeleteHistory = new DeleteHistory(ContentType.QUESTION, this.id, this.writer, LocalDateTime.now());
+        return Stream.concat(answerDeleteHistories, Stream.of(questionDeleteHistory))
+                .collect(Collectors.toList());
     }
 }
